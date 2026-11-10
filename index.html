@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剪刀石頭布 終極大對決</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a40 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .setup-screen, .game-screen, .result-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .input-group {
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ffd700;
+        }
+
+        button.btn-action {
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button.btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 126, 95, 0.4);
+        }
+
+        .player-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+
+        .score-box {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .score-num {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .choice-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .btn-choice {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 10px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-choice:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #ffd700;
+            transform: scale(1.05);
+        }
+
+        .btn-choice span {
+            font-size: 1.8rem;
+        }
+
+        .log-box {
+            min-height: 80px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px dashed rgba(255,255,255,0.2);
+        }
+
+        .win-msg { color: #50fa7b; font-weight: bold; }
+        .lose-msg { color: #ff5555; font-weight: bold; }
+        .draw-msg { color: #f1fa8c; font-weight: bold; }
+
+        .final-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .final-desc {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- 登入設定畫面 -->
+        <div id="setup-screen" class="setup-screen">
+            <h1>⚔️ 冒險者登場 ⚔️</h1>
+            <div class="input-group">
+                <label for="player-name">冒險者名字：</label>
+                <input type="text" id="player-name" placeholder="請輸入名字" value="冒險者">
+            </div>
+            <div class="input-group">
+                <label for="player-equip">使用裝備：</label>
+                <input type="text" id="player-equip" placeholder="例如：黃金鍵盤、魔法魔杖" value="黃金鍵盤">
+            </div>
+            <button class="btn-action" onclick="startGame()">開始冒險</button>
+        </div>
+
+        <!-- 遊戲主要畫面 -->
+        <div id="game-screen" class="game-screen hidden">
+            <h1>✊✋✌️ 終極大對決</h1>
+            
+            <div class="player-info" id="broadcast-msg"></div>
+
+            <div class="score-board">
+                <div class="score-box">
+                    <span id="name-display">玩家</span>
+                    <span class="score-num" id="player-score">0</span>
+                </div>
+                <div style="font-size: 1.5rem; color: #888;">VS</div>
+                <div class="score-box">
+                    <span>🤖 電腦</span>
+                    <span class="score-num" style="color: #ff6b6b;" id="computer-score">0</span>
+                </div>
+            </div>
+
+            <div class="log-box" id="round-log">
+                請選擇要出的拳法！<br><small style="color: #aaa;">(先獲得 3 勝者獲得最終勝利)</small>
+            </div>
+
+            <div class="choice-buttons">
+                <button class="btn-choice" onclick="playRound('剪刀')">
+                    <span>✌️</span>剪刀
+                </button>
+                <button class="btn-choice" onclick="playRound('石頭')">
+                    <span>✊</span>石頭
+                </button>
+                <button class="btn-choice" onclick="playRound('布')">
+                    <span>✋</span>布
+                </button>
+            </div>
+        </div>
+
+        <!-- 結算畫面 -->
+        <div id="result-screen" class="result-screen hidden">
+            <div class="final-title" id="final-title">🌟 最終結果 🌟</div>
+            <div class="final-desc" id="final-desc"></div>
+            <button class="btn-action" onclick="resetGame()">再次挑戰</button>
+        </div>
+    </div>
+
+    <script>
+        let playerName = "";
+        let playerEquip = "";
+        let playerWins = 0;
+        let computerWins = 0;
+        let roundNum = 1;
+
+        const options = ["剪刀", "石頭", "布"];
+
+        function startGame() {
+            const nameInput = document.getElementById("player-name").value.trim();
+            const equipInput = document.getElementById("player-equip").value.trim();
+
+            playerName = nameInput || "無名冒險者";
+            playerEquip = equipInput || "赤手空拳";
+
+            document.getElementById("name-display").innerText = playerName;
+            document.getElementById("broadcast-msg").innerHTML = 
+                `📢 歡迎勇敢的冒險者【<b>${playerName}</b>】！<br>你已經裝備了【<b>${playerEquip}</b>】，準備好迎接【剪刀石頭布】挑戰！`;
+
+            document.getElementById("setup-screen").classList.add("hidden");
+            document.getElementById("game-screen").classList.remove("hidden");
+        }
+
+        function playRound(playerChoice) {
+            if (playerWins >= 3 || computerWins >= 3) return;
+
+            const computerChoice = options[Math.floor(Math.random() * options.length)];
+            let logHtml = `--- 第 ${roundNum} 回合 ---<br>你出了【${playerChoice}】，電腦出了【${computerChoice}】<br>`;
+
+            if (playerChoice === computerChoice) {
+                logHtml += `<span class="draw-msg">🤝 平手！沒有人得分。</span>`;
+            } else if (
+                (playerChoice === "剪刀" && computerChoice === "布") ||
+                (playerChoice === "石頭" && computerChoice === "剪刀") ||
+                (playerChoice === "布" && computerChoice === "石頭")
+            ) {
+                playerWins++;
+                logHtml += `<span class="win-msg">🎉 這回合你贏了！</span>`;
+            } else {
+                computerWins++;
+                logHtml += `<span class="lose-msg">💥 這回合電腦贏了！</span>`;
+            }
+
+            roundNum++;
+
+            // 更新分數與戰況
+            document.getElementById("player-score").innerText = playerWins;
+            document.getElementById("computer-score").innerText = computerWins;
+            document.getElementById("round-log").innerHTML = logHtml;
+
+            // 檢查是否達到結束條件 (勝場等於 3)
+            if (playerWins === 3 || computerWins === 3) {
+                setTimeout(showFinalResult, 1000);
+            }
+        }
+
+        function showFinalResult() {
+            document.getElementById("game-screen").classList.add("hidden");
+            const resultScreen = document.getElementById("result-screen");
+            resultScreen.classList.remove("hidden");
+
+            const finalTitle = document.getElementById("final-title");
+            const finalDesc = document.getElementById("final-desc");
+
+            if (playerWins === 3) {
+                finalTitle.innerHTML = "🏆 勝利！ 🏆";
+                finalTitle.style.color = "#ffd700";
+                finalDesc.innerHTML = `恭喜你以 <b>${playerWins} : ${computerWins}</b> 擊敗了電腦，成為剪刀石頭布大師！`;
+            } else {
+                finalTitle.innerHTML = "💻 失敗！ 💻";
+                finalTitle.style.color = "#ff5555";
+                finalDesc.innerHTML = `很可惜，電腦以 <b>${computerWins} : ${playerWins}</b> 獲得了最終勝利，下次再來挑戰吧！`;
+            }
+        }
+
+        function resetGame() {
+            playerWins = 0;
+            computerWins = 0;
+            roundNum = 1;
+
+            document.getElementById("player-score").innerText = "0";
+            document.getElementById("computer-score").innerText = "0";
+            document.getElementById("round-log").innerHTML = '請選擇要出的拳法！<br><small style="color: #aaa;">(先獲得 3 勝者獲得最終勝利)</small>';
+
+            document.getElementById("result-screen").classList.add("hidden");
+            document.getElementById("setup-screen").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
